@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="threadReplyViewSource" title="[kiror] View source for thread replies" version_string="0.0.1" version_id="1" url="https://github.com/adlerosn/" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="kiror_option_template_custom_bbcode_sourceview"><![CDATA[<xen:require js="js/xenforo/options_censor.js" />
+
+<xen:controlunit label="{$preparedOption.title}" hint="{$preparedOption.hint}">
+	<xen:explain>{xen:raw $preparedOption.explain}</xen:explain>
+	<xen:html>
+		<ul>
+			<xen:foreach loop="$choices" key="$counter" value="$choice">
+			<li>
+				<xen:textbox name="{$fieldPrefix}[{$preparedOption.option_id}][{$counter}][0]" value="{$choice.0}" placeholder="BBCode substring" size="40" />
+			</li>
+			</xen:foreach>
+		
+			<li class="CensorWordOptionListener">
+				<xen:textbox name="{$fieldPrefix}[{$preparedOption.option_id}][{$nextCounter}][0]" value="" placeholder="BBCode substring" size="40" />
+			</li>
+		</ul>
+		
+		<input type="hidden" name="{$listedFieldName}" value="{$preparedOption.option_id}" />
+		{xen:raw $editLink}
+	</xen:html>
+</xen:controlunit>]]></template>
+  </admin_templates>
+  <admin_template_modifications/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="threadReplyViewSource_extensor" callback_method="load_class" active="1" hint="XenForo_ControllerPublic_Post" description="Extends post class functionality to provide a source view"/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <option option_id="viewsourcehideitems" edit_format="callback" data_type="array" can_backup="1" validation_class="threadReplyViewSource_admincpStatic" validation_method="verifier_AdminCP_CustomLinksAdder">
+      <default_value>a:14:{i:0;s:7:"[ADMIN]";i:1;s:8:"[CHARGE=";i:2;s:21:"[ISMEMBEROFUSERGROUP=";i:3;s:24:"[ISNOTMEMBEROFUSERGROUP=";i:4;s:13:"[ISNOTUSERID=";i:5;s:15:"[ISNOTUSERNAME=";i:6;s:10:"[ISUSERID=";i:7;s:12:"[ISUSERNAME=";i:8;s:5:"[MOD]";i:9;s:10:"[NOTADMIN]";i:10;s:10:"[NOTGUEST]";i:11;s:8:"[NOTMOD]";i:12;s:15:"[NOTREGISTERED]";i:13;s:12:"[REGISTERED]";}</default_value>
+      <edit_format_params>threadReplyViewSource_admincpStatic::render_AdminCP_CustomLinksAdder</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="censoringOptions" display_order="100"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions>
+      <permission permission_group_id="forum" permission_id="viewpostsourcebbcode" permission_type="flag" default_value="unset" interface_group_id="forumPermissions" display_order="1"/>
+    </permissions>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="kiror_viewsource_notallowederror" global_cache="1" version_id="0" version_string="0.0.0"><![CDATA[This message contains some code that is being hidden for security reasons.]]></phrase>
+    <phrase title="option_viewsourcehideitems" version_id="0" version_string="0.0.0"><![CDATA[View Source forbidden tags]]></phrase>
+    <phrase title="option_viewsourcehideitems_explain" version_id="0" version_string="0.0.0"><![CDATA[]]></phrase>
+    <phrase title="permission_forum_viewpostsourcebbcode" version_id="0" version_string="0.0.0"><![CDATA[View source]]></phrase>
+    <phrase title="viewsource" global_cache="1" version_id="0" version_string="0.0.0"><![CDATA[View source]]></phrase>
+    <phrase title="view_source_of_post_by_x" global_cache="1" version_id="0" version_string="0.0.0"><![CDATA[View Source of post by]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates>
+    <template title="kiror_post_viewsource" version_id="0" version_string="0.0.0"><![CDATA[<xen:title>{xen:phrase view_source_of_post_by_x} {$post.username}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link full:posts, $post}">{xen:helper threadPrefix, $thread}{$thread.title}</xen:breadcrumb>
+</xen:navigation>
+
+<div class="section">
+	<ul class="messageText primaryContent">
+		<xen:if is="{$musthide}">
+		<i>{xen:phrase kiror_viewsource_notallowederror}</i>
+		<xen:else />
+		<dl class="ctrlUnit fullWidth surplusLabel">
+			<dd>
+				<pre style="max-height: 250px; overflow-y: scroll;">{$post.message}</pre>
+			</dd>
+		</dl>
+		</xen:if>
+	</ul>
+	<div class="sectionFooter">
+		<span class="buttonContainer">
+			<input value="Cancel" class="button OverlayCloser" accesskey="r" type="button">
+		</span>
+	</div>
+</div>
+
+]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="post" modification_key="addhookforviewsource" description="Add hook for view source button" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:if is="{$post.canEdit}">]]></find>
+      <replace><![CDATA[<xen:if is="{$visitor.permissions.forum.viewpostsourcebbcode}">
+<a href="{xen:link posts/viewsource, $post}" class="OverlayTrigger item control viewsource" data-cacheOverlay="true"><span></span>{xen:phrase viewsource}</a>
+</xen:if>
+				$0]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
